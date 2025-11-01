@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Liste des Factures</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+   <style>
+  body {
+    background: linear-gradient(135deg, #fffaf0, #fff5e6);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 40px 20px;
+    color: #333;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: auto;
+    background: #fff;
+    padding: 35px 30px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.12);
+  }
+
+  h2 {
+    color: #ff7f0e;
+    font-weight: 700;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  /* Bouton retour */
+  a.btn-outline-warning {
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 8px 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 25px;
+  }
+
+  a.btn-outline-warning:hover {
+    background-color: #ff7f0e;
+    color: #fff;
+  }
+
+  /* Tableau */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    font-size: 0.95rem;
+  }
+
+  thead th {
+    background-color: #fff3e6;
+    font-weight: 600;
+    color: #444;
+    padding: 12px 15px;
+    text-align: center;
+    border-radius: 8px 8px 0 0;
+  }
+
+  tbody tr {
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(255 127 14 / 0.1);
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+  }
+
+  tbody tr:hover {
+    background-color: #fff8e1;
+  }
+
+  tbody td {
+    padding: 12px 15px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  /* Boutons actions */
+  .btn-sm {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
+
+  .btn-outline-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: #fff;
+  }
+
+  .btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+  }
+
+  /* Responsive */
+  @media (max-width: 767.98px) {
+  .table-responsive {
+    display: none;
+  }
+  }
+</style>
+
+</head>
+<body class="bg-light">
+
+<div class="container-fluid py-5">
+    <h2 class="mb-4 text-center">Liste des clients</h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+            &larr; Retour à l'accueil
+        </a>
+
+        <form method="get" action="{{ url_for('affichage_clients') }}" class="d-flex gap-2 flex-grow-1 flex-sm-grow-0" role="search" aria-label="Recherche client">
+            <input
+                type="search"
+                name="search"
+                value="{{ search }}"
+                placeholder="Rechercher par client ou ice..."
+                class="form-control"
+                style="min-width: 350px; max-width: 450px;"
+                aria-label="Recherche client"
+            />
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+            {% if search %}
+                <a href="{{ url_for('affichage_clients') }}" class="btn btn-outline-secondary">Annuler</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="table-responsive rounded shadow-sm border">
+        <table class="table table-hover table-bordered align-middle text-center mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Nom Société</th>
+                    <th scope="col">ICE</th>
+                    <th scope="col">Adresse</th>
+                    <th scope="col">Téléphone</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Période d'échéance</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+                   <tbody>
+                {% for f in clients %}
+                <tr>
+                    <td>{{ f[1] }}</td>
+                    <td>{{ f[2] }}</td>
+                    <td>{{ f[3] }}</td>
+                    <td>{{ f[4] }}</td>
+                    <td>{{ f[5] }}</td>
+                    <td>{{ f[6] }}</td>
+                 
+            
+                   
+                
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-warning me-1 mb-1" href="{{ url_for('modifier_client', client_id=f[0]) }}" title="Modifier le client">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                       <form method="POST" action="{{ url_for('supprimer_client', client_id=f[0]) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce client ?')">
+    <button type="submit" class="btn btn-sm btn-danger mb-1" title="Supprimer le client">
+        <i class="bi bi-trash"></i> Supprimer
+    </button>
+</form>
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="13" class="text-muted fst-italic py-3">
+                        Aucun client trouvé.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- CARTES POUR MOBILE -->
+  <div id="clients-cards-container" class="d-md-none"></div>
+
+</div>
+
+<script>
+
+function afficherCartesMobile() {
+  const container = document.getElementById("clients-cards-container");
+  const tableau = document.querySelector("table tbody");
+  container.innerHTML = ""; // pour éviter les doublons
+
+  if (tableau && container) {
+    [...tableau.rows].forEach(row => {
+      const cells = row.cells;
+      if (cells.length < 6) return;
+
+      const card = document.createElement("div");
+      card.className = "card mb-3 shadow-sm";
+
+      const body = document.createElement("div");
+      body.className = "card-body";
+
+      body.innerHTML = `
+        <div class="d-flex justify-content-between">
+          <p><strong>Nom Client :</strong> ${cells[0].innerText}</p>
+          <p><strong>ICE :</strong> ${cells[1].innerText}</p>
+        </div>
+        <p><strong>Adresse :</strong> ${cells[2].innerText}</p>
+        <p><strong>Téléphone :</strong> ${cells[3].innerText}</p>
+        <p><strong>Email :</strong> ${cells[4].innerText}</p>
+        <p><strong>Période d'Échéance :</strong> ${cells[5].innerText}</p>
+         <div class="d-flex justify-content-around mt-3">${cells[6].innerHTML}</div>
+      `;
+
+      card.appendChild(body);
+      container.appendChild(card);
+    });
+
+    activerBoutonsStatut();
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.innerWidth < 768) {
+    afficherCartesMobile();
+  } else {
+    activerBoutonsStatut();
+  }
+});
+
+window.addEventListener("resize", function () {
+  if (window.innerWidth < 768) {
+    afficherCartesMobile();
+  } else {
+    location.reload(); // pour repasser en tableau si nécessaire
+  }
+});
+
+
+</script>
+
+<!-- Bootstrap Icons CDN for button icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+</body>
+</html>

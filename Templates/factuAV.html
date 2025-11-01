@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Facture</title>
+  <link rel="stylesheet" href="{{ css_path }}">
+</head>
+<body>
+  <div class="facture">
+    <div class="barre-entete">
+      <div class="forme-tri-couleur"></div> 
+    </div>
+
+    <header class="entete">
+      <div class="logo-section">
+        <img src="{{ logo_path }}" alt="Logo" class="logo">
+      </div>
+      <div class="coordonnees">
+        <p>📞 06 66 64 38 17</p>
+        <p>📧 hauas.trans@gmail.com</p>
+      </div>
+    </header>
+
+    <section class="societe-info">
+      <strong>{{ facture.nom_societe }}</strong><br>
+      <strong>I.C.E :</strong> <strong>{{ facture.ice }}</strong><br>
+       {{ facture.adresse }}<br>
+      
+    </section>
+
+    <section class="facture-info">
+      <h1>FACTURE</h1>
+      <p><strong>№ :</strong> {{ facture.numero }}</p>
+      <p><strong>DATE :</strong> {{ facture.date_facture }}</p>
+    </section>
+
+    <div class="vehicules">
+      <div class="vehicule-block">
+        <div class="label">CAMION</div>
+        <div class="valeur">{{ facture.camion }}</div>
+      </div>
+      <div class="vehicule-block">
+        <div class="label">Remorque</div>
+        <div class="valeur">{{ facture.remorque }}</div>
+      </div>
+    </div>
+
+    <div class="tableau-container">
+      <table class="tableau">
+        <thead>
+          <tr>
+            <th>DESCRIPTION</th>
+            <th>PRIX</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ facture.description }}<br><span class="trajet">{{ facture.ligne_depart}} vers {{ facture.ligne_destination }}</span></td>
+            <td>{{ "%.2f"|format(facture.montant) }} {{ facture.devise }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="totals-section">
+      <div class="colonne-gauche">
+        <p>Arrêtée la présente facture à la somme de :</p>
+        <p class="lettres">{{ facture.montant_lettres }}</p>
+      </div>
+      <div class="colonne-droite">
+        <div class="ligne-tva">
+          <span><strong>TVA :</strong></span>
+          <span>{{ "%.2f"|format(facture.tva|float) }}</span>
+        </div>
+        <div class="total-box">
+          Total : {{ "%.2f"|format(facture.montant_ttc|default(0)|float) }} {{ facture.devise }}
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer-facture">
+      <p>RIB : 007 640 0003325000000263 56 - CODE SWIFT : BCMAMAMC</p>
+      <p>ICE: 003354336000082         IF : 53945271       TP:57226763</p>
+      <p>Avenue Abi LHASSAN CHADILI immeuble WARDA N 03 RDC Tanger</p>
+    </footer>
+
+    <div class="footer-original">
+      <div class="forme-originale"></div>
+    </div>
+  </div>
+    <!-- Bouton PDF uniquement visible dans le navigateur -->
+  <div class="affichage-ecran">
+    <a href="{{ url_for('telecharger_pdf') }}?numero={{ facture.numero }}" class="btn-pdf" target="_blank">📄 Télécharger en PDF</a>
+    <a href="{{ url_for('index') }}">
+    <button style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px;">
+        ← Retour à l'accueil
+    </button>
+</a>
+
+  </div>
+
+</body>
+</html>

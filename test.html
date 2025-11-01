@@ -1,0 +1,33 @@
+<style>
+.footer-original {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: #f36f11;
+  overflow: visible;
+  z-index: 1000;
+}
+
+.forme-originale {
+  position: absolute;
+  top: -40px;
+  right: -200px; /* Passé de left à right */
+  width: 600px;
+  height: 140px;
+  background: linear-gradient(
+    to right,
+    #2166c1 0%,
+    #2166c1 40%,
+    #f36f11 40%,
+    #f36f11 100%
+  );
+  transform: skewX(30deg); /* Inversion de l'angle */
+  transform-origin: top right; /* Origine à droite */
+}
+</style>
+
+<div class="footer-original">
+  <div class="forme-originale"></div>
+</div>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modifier Facture</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .card {
+      border-radius: 10px;
+    }
+    .card-header {
+      background-color: #0d6efd;
+    }
+    .btn-success {
+      background-color: #28a745;
+    }
+    .btn-success:hover {
+      background-color: #218838;
+    }
+    .form-label {
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-5">
+  <div class="card shadow-lg">
+    <div class="card-header text-white">
+      <h4 class="mb-0">✏️ Modifier le client : {{ client[1] }}</h4>
+    </div>
+    <div class="card-body">
+      <form action="{{ url_for('enregistrer_modification_client', client_id=client[0]) }}" method="POST" class="row g-4">
+
+        <!-- Nom de la société -->
+        <div class="col-md-6">
+          <label class="form-label" for="nom_societe">Nom de la société</label>
+          <input type="text" id="nom_societe" name="nom_societe" class="form-control" value="{{ client[1] }}" required>
+        </div>
+
+        <!-- ICE -->
+        <div class="col-md-6">
+          <label class="form-label" for="ice">ICE</label>
+          <input type="text" id="ice" name="ice" class="form-control" value="{{ client[2] }}" required>
+        </div>
+
+        <!-- Adresse -->
+        <div class="col-md-6">
+          <label class="form-label" for="adresse">Adresse</label>
+          <input type="text" id="adresse" name="adresse" class="form-control" value="{{ client[3] }}" required>
+        </div>
+
+        <!-- Téléphone -->
+        <div class="col-md-6">
+          <label class="form-label" for="telephone">Téléphone</label>
+          <input type="tel" class="form-control" id="telephone" name="telephone"
+       pattern="[0-9]{12}" title="Entrez un numéro de 12 chiffres" placeholder="Ex: 212600123456" value="{{ client[4] }}" required>
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-6">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-control" value="{{ client[5] }}" required>
+        </div>
+        <!-- Période d'échéance -->
+        <div class="col-md-6">
+          <label class="form-label" for="periode_echeance">Période Échéance </label>
+          <select id="periode_echeance" name="periode_echeance" class="form-select">
+            <option value="30" {% if client[6] == 30 %}selected{% endif %}>30 jours</option>
+            <option value="60" {% if client[6] == 60 %}selected{% endif %}>60 jours</option>
+            <option value="90" {% if client[6] == 90 %}selected{% endif %}>90 jours</option>
+            <option value="120" {% if client[6] == 120 %}selected{% endif %}>120 jours</option>
+          </select>
+        </div>
+
+        <!-- Boutons -->
+        <div class="col-12 d-flex justify-content-between mt-4">
+          <a href="{{ url_for('liste_clients') }}" class="btn btn-outline-secondary">⬅ Annuler</a>
+          <button type="submit" class="btn btn-success">💾 Enregistrer les modifications</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- JS Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
+     
+
+

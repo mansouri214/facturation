@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Liste des Factures</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    h2 {
+      color: #333;
+    }
+    .btn-primary {
+      background-color: #4a90e2;
+      border-color: #4a90e2;
+    }
+    .btn-outline-secondary {
+      border-radius: 50px;
+    }
+    .card {
+      border-radius: 1rem;
+      border: none;
+    }
+    .card-body {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1rem 1.25rem;
+    }
+    .table {
+      background-color: white;
+    }
+    .table th, .table td {
+      vertical-align: middle;
+    }
+    .form-control, .form-select {
+      border-radius: 0.5rem;
+    }
+    label {
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .form-check-label {
+      margin-left: 0.3rem;
+    }
+    #factures-cards-container .card-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    #factures-cards-container .btn {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+    .toggle-statut {
+      border-radius: 50px;
+    }
+    .text-danger.fw-bold {
+      color: #dc3545 !important;
+      font-weight: 600 !important;
+    }
+    @media screen and (max-width: 768px) {
+      .table-responsive {
+        display: none;
+      }
+      #factures-cards-container .card-body p {
+        margin-bottom: 4px;
+      }
+      form[role="search"] input[type="search"] {
+        min-width: 100px;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container-fluid py-4">
+  <h2 class="mb-4 text-center">Liste des Factures</h2>
+
+  <!-- Formulaire de recherche -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+      &larr; Retour à l'accueil
+    </a>
+
+    <form method="get" action="{{ url_for('affichage_facture') }}" class="d-flex gap-2 flex-grow-1 flex-sm-grow-0" role="search">
+      <input type="search" name="search" value="{{ search }}" placeholder="Par facture ou date ou statut..." class="form-control" style="min-width: 300px; max-width: 800px;" />
+      <button type="submit" class="btn btn-primary">Rechercher</button>
+      {% if search %}
+      <a href="{{ url_for('affichage_facture') }}" class="btn btn-outline-secondary">Annuler</a>
+      {% endif %}
+    </form>
+  </div>
+<!-- Filtres -->
+<div class="mb-4">
+  <h5>Filtres</h5>
+  <div class="d-flex flex-wrap gap-4">
+    <!-- Filtre par client -->
+    <div>
+      <label for="filtre-client" class="form-label">Client</label>
+      <select id="filtre-client" class="form-select">
+        <option value="">Tous</option>
+        {% for f in factures|unique(attribute=3) %}
+          <option value="{{ f[3] }}">{{ f[3] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Filtre par statut -->
+    <div>
+      <label class="form-label">Statut</label>
+      <div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="statutPayee" value="payée">
+          <label class="form-check-label" for="statutPayee">Payée</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="statutImpayee" value="impayée">
+          <label class="form-check-label" for="statutImpayee">Impayée</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- filtre DESKTOP -->
+<form method="get" action="{{ url_for('affichage_facture') }}" class="row g-3 mb-4">
+  <div class="col-12 col-md-3">
+    <label>Date facture (min)</label>
+    <input type="date" name="date_min" class="form-control" value="{{ date_min or '' }}">
+  </div>
+  <div class="col-12 col-md-3">
+    <label>Date facture (max)</label>
+    <input type="date" name="date_max" class="form-control" value="{{ date_max or '' }}">
+  </div>
+
+  <div class="col-12 col-md-3">
+    <label>Échéance (min)</label>
+    <input type="date" name="echeance_min" class="form-control" value="{{ echeance_min or '' }}">
+  </div>
+  <div class="col-12 col-md-3">
+    <label>Échéance (max)</label>
+    <input type="date" name="echeance_max" class="form-control" value="{{ echeance_max or '' }}">
+  </div>
+
+  <div class="col-12 col-md-2">
+    <label>Montant min</label>
+    <input type="number" step="0.01" name="montant_min" class="form-control" value="{{ montant_min or '' }}">
+  </div>
+  <div class="col-12 col-md-2">
+    <label>Montant max</label>
+    <input type="number" step="0.01" name="montant_max" class="form-control" value="{{ montant_max or '' }}">
+  </div>
+
+  <div class="col-12 col-md-2">
+    <label>Départ</label>
+    <input type="text" name="ligne_depart" class="form-control" value="{{ ligne_depart or '' }}">
+  </div>
+  <div class="col-12 col-md-2">
+    <label>Arrivée</label>
+    <input type="text" name="ligne_arrivee" class="form-control" value="{{ ligne_arrivee or '' }}">
+  </div>
+
+  <div class="col-12 col-md-2">
+    <label>Devise</label>
+    <select name="devise" class="form-control">
+      <option value="">--</option>
+      <option value="MAD" {% if devise == 'MAD' %}selected{% endif %}>MAD</option>
+      <option value="EUR" {% if devise == 'EUR' %}selected{% endif %}>EUR</option>
+      <option value="USD" {% if devise == 'USD' %}selected{% endif %}>USD</option>
+    </select>
+  </div>
+
+  <div class="col-md-12 d-flex justify-content-end align-items-end gap-2 mt-3">
+  <button type="submit" class="btn btn-primary">Filtrer</button>
+  <a href="{{ url_for('affichage_facture') }}" class="btn btn-secondary">Réinitialiser</a>
+</div>
+<!-- Tri -->
+<div class="col-12 col-md-6 col-lg-4">
+  <label for="tri" class="form-label fw-semibold">Trier par</label>
+  <select id="tri" class="form-select">
+    <option value="">Aucun tri</option>
+    <option value="date_desc">Date (récent → ancien)</option>
+    <option value="date_asc">Date (ancien → récent)</option>
+    <option value="montant_desc">Montant TTC (décroissant)</option>
+    <option value="montant_asc">Montant TTC (croissant)</option>
+  </select>
+</div>
+</form>
+
+  <!-- TABLEAU DESKTOP -->
+  <div class="table-responsive rounded shadow-sm border d-none d-md-block">
+    <table class="table table-hover table-bordered align-middle text-center mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Numéro</th>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Camion</th>
+          <th>Remorque</th>
+          <th>Période Échéance</th>
+          <th>Départ</th>
+          <th>Arrivée</th>
+          <th>Montant HT</th>
+          <th>TVA (%)</th>
+          <th>Total TTC</th>
+          <th>Devise</th>
+          <th>Échéance</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in factures %}
+        <tr>
+          <td>{{ f[1] }}</td>
+          <td>{{ f[2].strftime('%Y-%m-%d') }}</td>
+          <td>{{ f[3] }}</td>
+          <td>{{ f[4] }}</td>
+          <td>{{ f[5] }}</td>
+          <td>{{ f[6] }}</td>
+          <td>{{ f[7] }}</td>
+          <td>{{ f[8] }}</td>
+          <td>{{ "{:,.2f}".format(f[9])|replace(',', ' ') }}</td>
+          <td>{{ f[10] }}</td>
+          <td>{{ "{:,.2f}".format(f[11])|replace(',', ' ') }}</td>
+          <td>{{ f[12] }}</td>
+   <td class="{% if f[13] and f[13] < datetime.utcnow().date() and f[14] != 'payée' %}text-danger fw-bold{% endif %}">
+    
+ 
+
+
+  {% if f[13] %}
+    {{ f[13].strftime('%Y-%m-%d') }}
+  {% else %}
+    -
+  {% endif %}
+</td>
+
+
+          <td>
+            <button class="btn btn-sm toggle-statut {{ 'btn-success' if f[14] == 'payée' else 'btn-outline-danger' }}" data-id="{{ f[0] }}" data-statut="{{ f[14] }}">
+              {{ f[14] }}
+            </button>
+          </td>
+          <td class="text-nowrap">
+            <a class="btn btn-sm btn-success me-1 mb-1" href="{{ url_for('telecharger_facture', facture_id=f[0]) }}">
+              <i class="bi bi-file-earmark-pdf"></i>
+            </a>
+            <a class="btn btn-sm btn-warning me-1 mb-1" href="{{ url_for('modifier_facture', facture_id=f[0]) }}">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="POST" action="{{ url_for('supprimer_facture', facture_id=f[0]) }}" style="display:inline;" onsubmit="return confirm('Supprimer cette facture ?')">
+              <button type="submit" class="btn btn-sm btn-danger mb-1">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="14" class="text-muted fst-italic py-3">Aucune facture trouvée.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CARTES POUR MOBILE -->
+  <div id="factures-cards-container" class="d-md-none"></div>
+
+</div>
+
+<script>
+function activerBoutonsStatut() {
+  const boutons = document.querySelectorAll('.toggle-statut');
+  boutons.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const factureId = this.dataset.id;
+      const statutActuel = this.dataset.statut;
+      const nouveauStatut = (statutActuel === 'payée') ? 'impayée' : 'payée';
+
+      if (confirm(`Changer le statut en "${nouveauStatut}" ?`)) {
+        fetch(`/changer-statut/${factureId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nouveau_statut: nouveauStatut })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) location.reload();
+          else alert("Erreur : " + data.message);
+        });
+      }
+    });
+  });
+}
+
+function afficherCartesMobile() {
+  const container = document.getElementById("factures-cards-container");
+  const tableau = document.querySelector("table tbody");
+  container.innerHTML = ""; // vide le container avant d'ajouter
+
+  if (!tableau || !container) return;
+
+  [...tableau.rows].forEach(row => {
+    const cells = row.cells;
+    if (cells.length < 15) return;  // sécurité
+
+    // Récupération des données
+    const id = row.querySelector('.toggle-statut')?.dataset.id || '';
+    const statut = row.querySelector('.toggle-statut')?.dataset.statut || '';
+
+    // Date d'échéance (colonne 13, index 12)
+    const dateEcheanceText = cells[12].innerText.trim();
+    let classeEcheance = "";
+    if (dateEcheanceText) {
+      const [year, month, day] = dateEcheanceText.split('-').map(Number);
+      const dateEcheance = new Date(year, month - 1, day);
+      const aujourdhui = new Date();
+
+      if (!isNaN(dateEcheance.getTime()) && dateEcheance < aujourdhui && statut !== 'payée') {
+        classeEcheance = "text-danger fw-bold";
+      }
+    }
+
+    // Construction de la carte HTML avec bouton toggle-statut
+    const card = document.createElement("div");
+    card.className = "card mb-3 shadow-sm";
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+
+    body.innerHTML = `
+      <div class="d-flex justify-content-between">
+        <p><strong>No :</strong> ${cells[0].innerText}</p>
+        <p><strong>Date :</strong> ${cells[1].innerText}</p>
+      </div>
+      <p><strong>Client :</strong> ${cells[2].innerText}</p>
+      <p><strong>Départ → Arrivée :</strong> ${cells[6].innerText} → ${cells[7].innerText}</p>
+      <div class="text-end">
+        <p><strong>Montant :</strong> ${cells[10].innerText} ${cells[11].innerText}</p>
+      </div>
+      <p><strong>Statut :</strong> <button class="btn btn-sm toggle-statut ${statut === 'payée' ? 'btn-success' : 'btn-outline-danger'}" data-id="${id}" data-statut="${statut}">${statut}</button></p>
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-around mt-3">${cells[14].innerHTML}</div>
+        <p><strong>Échéance :</strong> <span class="${classeEcheance}">${dateEcheanceText || '-'}</span></p>
+      </div>
+      
+    `;
+
+    card.appendChild(body);
+    container.appendChild(card);
+  });
+
+  // Active les listeners sur les boutons créés
+  activerBoutonsStatut();
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (window.innerWidth < 768) {
+    afficherCartesMobile();
+    
+  } else {
+    activerBoutonsStatut();
+  }
+});
+
+window.addEventListener("resize", function () {
+  if (window.innerWidth < 768) {
+    afficherCartesMobile();
+  } else {
+    location.reload(); // pour repasser en tableau si nécessaire
+  }
+});
+
+
+</script>
+
+<script>
+let filtreActif = false;
+
+function filtrerFactures() {
+  if (!filtreActif) {
+    // Affiche tout au départ
+    document.querySelectorAll('table tbody tr').forEach(row => row.style.display = '');
+    document.querySelectorAll('#factures-cards-container .card').forEach(card => card.style.display = '');
+    return;
+  }
+
+  const filtreClient = document.getElementById('filtre-client').value.toLowerCase();
+  const statutPayee = document.getElementById('statutPayee').checked;
+  const statutImpayee = document.getElementById('statutImpayee').checked;
+
+  // Si aucune case statut cochée, on ne filtre pas par statut
+  const statutFiltresActifs = statutPayee || statutImpayee;
+
+  // Filtrer tableau desktop
+  const rows = document.querySelectorAll('table tbody tr');
+  rows.forEach(row => {
+    const clientCell = row.querySelector('td:nth-child(3)');
+    const statutCell = row.querySelector('td:nth-child(14)');
+    if (!clientCell || !statutCell) return;
+
+    const clientText = clientCell.innerText.toLowerCase();
+    const statutText = statutCell.innerText.trim().toLowerCase();
+
+    const clientOk = (filtreClient === '') || (clientText === filtreClient);
+    const statutOk = !statutFiltresActifs
+      ? true
+      : (statutText === 'payée' && statutPayee) || (statutText === 'impayée' && statutImpayee);
+
+    row.style.display = (clientOk && statutOk) ? '' : 'none';
+  });
+
+  // Filtrer cartes mobiles
+  const container = document.getElementById("factures-cards-container");
+  if (!container) return;
+  const cards = container.querySelectorAll(".card");
+  cards.forEach(card => {
+    const clientP = Array.from(card.querySelectorAll("p")).find(p => p.innerText.toLowerCase().startsWith("client :"));
+    const statutP = Array.from(card.querySelectorAll("p")).find(p => p.innerText.toLowerCase().startsWith("statut :"));
+    if (!clientP || !statutP) return;
+
+    const clientText = clientP.innerText.split(':')[1].trim().toLowerCase();
+    const statutText = statutP.innerText.split(':')[1].trim().toLowerCase();
+
+    const clientOk = (filtreClient === '') || (clientText === filtreClient);
+    const statutOk = !statutFiltresActifs
+      ? true
+      : (statutText === 'payée' && statutPayee) || (statutText === 'impayée' && statutImpayee);
+
+    card.style.display = (clientOk && statutOk) ? '' : 'none';
+  });
+    // === AJOUT pour message "Aucune facture trouvée" en mobile ===
+  if (window.innerWidth < 768 && container) {
+    const visibles = [...container.querySelectorAll(".card")].filter(card => card.style.display !== "none");
+    if (visibles.length === 0) {
+      container.innerHTML = "<div class='text-muted text-center py-3'>Aucune facture trouvée.</div>";
+    }
+  }
+
+}
+
+function onFiltreChange() {
+  filtreActif = true;
+
+  // Si mobile, afficher les cartes avant de filtrer
+  if (window.innerWidth < 768) {
+    afficherCartesMobile();
+  }
+
+  filtrerFactures();
+}
+
+
+document.getElementById('filtre-client').addEventListener('change', onFiltreChange);
+document.getElementById('statutPayee').addEventListener('change', onFiltreChange);
+document.getElementById('statutImpayee').addEventListener('change', onFiltreChange);
+document.getElementById('tri').addEventListener('change', function () {
+  trierFactures(this.value);
+});
+ // 
+function trierFactures(mode) {
+  // Vue tableau
+  const rows = Array.from(document.querySelectorAll('table tbody tr')).filter(r => r.style.display !== 'none');
+
+  rows.sort((a, b) => {
+    const getDate = el => new Date(el.querySelector('td:nth-child(2)').innerText.trim());
+    const getMontant = el => parseFloat(el.querySelector('td:nth-child(11)').innerText.replace(/\s/g, ''));
+
+    if (mode === 'date_desc') return getDate(b) - getDate(a);
+    if (mode === 'date_asc') return getDate(a) - getDate(b);
+    if (mode === 'montant_desc') return getMontant(b) - getMontant(a);
+    if (mode === 'montant_asc') return getMontant(a) - getMontant(b);
+    return 0;
+  });
+
+  const tbody = document.querySelector('table tbody');
+  rows.forEach(row => tbody.appendChild(row));
+
+ // Vue mobile
+const cards = Array.from(document.querySelectorAll('#factures-cards-container .card')).filter(c => c.style.display !== 'none');
+
+const getDate = card => {
+  const dateP = card.querySelectorAll('p');
+  for (let p of dateP) {
+    if (p.innerText.startsWith('Date')) {
+      const dateText = p.innerText.split(':')[1]?.trim();
+      return new Date(dateText);
+    }
+  }
+  return new Date(0); // fallback
+};
+
+const getMontant = card => {
+  const montantP = card.querySelector('div.text-end p');
+  if (!montantP) return 0;
+
+  const text = montantP.innerText; // "Montant : 12 300.50 MAD"
+
+  const match = text.match(/Montant\s*:\s*([\d\s.,]+)/);
+  if (!match || !match[1]) return 0;
+
+  const montantStr = match[1].replace(/\s/g, '').replace(',', '.'); // "12300.50"
+  return parseFloat(montantStr);
+};
+
+
+cards.sort((a, b) => {
+  if (mode === 'date_desc') return getDate(b) - getDate(a); // récent → ancien
+  if (mode === 'date_asc') return getDate(a) - getDate(b); // ancien → récent
+  if (mode === 'montant_desc') return getMontant(b) - getMontant(a); // montant élevé → faible
+  if (mode === 'montant_asc') return getMontant(a) - getMontant(b); // montant faible → élevé
+  return 0;
+});
+
+const container = document.getElementById("factures-cards-container");
+cards.forEach(card => container.appendChild(card));
+
+}
+</script>
+
+</body>
+</html>
